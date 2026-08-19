@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="theme-color" content="#F4EFE3">
+<title>ገበያ</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ገበያ">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4EFE3;
+    --surface:#FFFFFF;
+    --surface-2:#F6F0E2;
+    --ink:#20180E;
+    --ink-dim:#756B5A;
+    --orange:#FF5A1F;
+    --orange-dim:#E04A15;
+    --leaf:#3E9A63;
+    --rose:#D6494F;
+    --steel:#2F7BA6;
+    --violet:#7A6BC9;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans Ethiopic','Inter',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  ::selection{background:var(--orange);color:#fff;}
+
+  header{
+    display:flex;align-items:center;gap:12px;
+    padding:10px 22px 2px;
+    max-width:1000px;margin:0 auto;
+  }
+  .wordmark{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:24px;
+    color:var(--ink);
+    letter-spacing:0.5px;
+    flex-shrink:0;
+  }
+  .wordmark span{color:var(--ink-dim);font-family:'Noto Sans Ethiopic';font-weight:500;font-size:12px;display:block;margin-top:1px;letter-spacing:0;}
+  .admin-btn{
+    background:none;border:none;color:transparent;
+    width:40px;height:40px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;font-size:17px;
+    flex-shrink:0;box-shadow:none;
+  }
+  .lang-btn{
+    background:#fff;border:1px solid #EFE7D6;color:var(--ink);
+    padding:7px 12px;border-radius:999px;font-size:12.5px;font-weight:700;
+    cursor:pointer;flex-shrink:0;font-family:inherit;
+    box-shadow:0 2px 8px rgba(32,24,14,.05);
+  }
+  .lang-btn:hover{border-color:var(--orange);color:var(--orange);}
+
+  .hero{
+    max-width:1000px;margin:0 auto;padding:2px 22px 10px;
+  }
+  .hero h1{
+    font-family:'Fraunces',serif;font-weight:700;font-size:24px;line-height:1.12;
+    color:var(--orange);margin:0 0 5px;letter-spacing:-.2px;
+  }
+  .hero p{
+    color:var(--ink-dim);font-size:13px;line-height:1.5;max-width:520px;margin:0;
+  }
+  .hero .buy-line{
+    margin-top:7px;color:#2C7A4C;font-weight:600;font-size:12px;
+    background:rgba(62,154,99,.10);border:1px solid rgba(62,154,99,.3);
+    padding:6px 11px;border-radius:9px;display:inline-block;max-width:none;
+  }
+
+  main{max-width:1000px;margin:0 auto;padding:0 22px 60px;}
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+  }
+  @media(min-width:520px){
+    .grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
+  }
+
+  .card{
+    background:var(--surface);
+    border-radius:var(--radius);
+    overflow:hidden;
+    border:1px solid #EFE7D6;
+    display:flex;flex-direction:column;
+    position:relative;
+    box-shadow:0 2px 10px rgba(32,24,14,.05);
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .card:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(32,24,14,.10);}
+
+  .card .photo-wrap{
+    aspect-ratio:4/3;background:#F0E9D9;overflow:hidden;position:relative;
+  }
+  .card img{width:100%;height:100%;object-fit:cover;display:block;}
+  .no-photo{
+    width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    color:#B7AB92;background:linear-gradient(160deg,#F3EDDF,#EAE1CB);
+  }
+  .no-photo svg{width:46px;height:46px;opacity:.85;}
+  .no-photo span{font-size:11px;color:#9C8F73;}
+
+  .tag{
+    position:absolute;top:10px;left:10px;
+    display:flex;align-items:center;gap:5px;
+    background:#E4A13A;color:#1A1207;
+    font-family:'Fraunces',serif;font-style:italic;font-weight:800;font-size:15px;
+    padding:5px 11px 5px 9px;
+    border-radius:3px 8px 8px 3px;
+    box-shadow:0 3px 6px rgba(228,161,58,.35);
+  }
+  .tag::before{
+    content:'';width:5px;height:5px;border-radius:50%;
+    background:rgba(26,18,7,.5);flex-shrink:0;
+  }
+
+  .card-body{padding:13px 14px 15px;display:flex;flex-direction:column;gap:6px;flex:1;}
+  .cat{font-size:11px;font-weight:700;letter-spacing:.3px;}
+  .name{font-weight:700;font-size:16px;line-height:1.35;color:var(--ink);}
+  .desc{font-size:13px;color:var(--ink-dim);line-height:1.5;flex:1;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+
+  @media(max-width:519px){
+    .card-body{padding:9px 10px 11px;gap:4px;}
+    .cat{font-size:9.5px;}
+    .name{font-size:13px;line-height:1.3;}
+    .desc{font-size:11px;-webkit-line-clamp:2;}
+    .tag{font-size:12px;padding:4px 9px 4px 7px;top:7px;left:7px;}
+    .call-btn{padding:7px;font-size:12px;}
+    .engage-row{gap:5px;margin-top:5px;}
+    .like-btn, .comment-toggle{font-size:11px;padding:6px;}
+  }
+
+  .call-btn{
+    margin-top:6px;
+    display:flex;align-items:center;justify-content:center;gap:7px;
+    background:var(--ink);border:1px solid var(--ink);color:#fff;
+    padding:9px;border-radius:9px;text-decoration:none;font-size:13.5px;font-weight:700;
+    transition:background .15s, border-color .15s;
+  }
+  .call-btn:hover{background:var(--orange);border-color:var(--orange);}
+
+  .engage-row{display:flex;gap:8px;margin-top:7px;}
+  .like-btn, .comment-toggle{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:5px;
+    background:var(--surface-2);border:1px solid #EFE7D6;color:var(--ink-dim);
+    padding:7px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;
+    font-family:inherit;
+  }
+  .like-btn:hover, .comment-toggle:hover{border-color:var(--orange);color:var(--ink);}
+  .comments-panel{
+    margin-top:9px;padding-top:9px;border-top:1px solid #EFE7D6;
+  }
+  .comments-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px;max-height:140px;overflow-y:auto;}
+  .comment-item{
+    background:var(--surface-2);border-radius:8px;padding:7px 10px;
+    font-size:12.5px;color:var(--ink);line-height:1.5;word-break:break-word;
+  }
+  .no-comments{font-size:12px;color:#9C8F73;padding:2px 2px 6px;}
+  .comment-input-row{display:flex;gap:7px;}
+  .comment-input-row input{
+    flex:1;min-width:0;background:var(--surface-2);border:1px solid #EFE7D6;color:var(--ink);
+    padding:8px 11px;border-radius:8px;font-size:12.5px;font-family:inherit;
+  }
+  .comment-input-row input:focus{outline:2px solid var(--orange);outline-offset:1px;}
+  .comment-input-row button{
+    background:var(--orange);color:#fff;border:none;padding:8px 13px;border-radius:8px;
+    font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;
+  }
+  .comment-input-row button:hover{background:var(--orange-dim);}
+
+  .del-btn{
+    position:absolute;top:10px;right:10px;
+    background:rgba(255,255,255,.92);color:var(--rose);border:1px solid #EFE7D6;
+    width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  .empty{
+    text-align:center;padding:70px 20px;color:var(--ink-dim);
+  }
+  .empty .big{font-family:'Fraunces',serif;font-size:20px;color:var(--ink);margin-bottom:8px;}
+
+  .breadcrumb{
+    display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;
+  }
+  .breadcrumb .crumb-back{
+    display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #E7DDC8;
+    color:var(--ink);padding:8px 13px;border-radius:9px;font-size:13.5px;font-weight:600;
+    cursor:pointer;
+  }
+  .breadcrumb .crumb-back:hover{border-color:var(--orange);color:var(--orange);}
+  .breadcrumb .crumb-title{
+    font-family:'Fraunces',serif;font-size:19px;color:var(--orange);
+  }
+
+  .search-wrap{margin-bottom:0;flex:1;min-width:0;}
+  .search-wrap input{
+    width:100%;background:#fff;border:1px solid #EFE7D6;color:var(--ink);
+    padding:9px 14px;border-radius:999px;font-size:13.5px;font-family:inherit;
+    box-shadow:0 2px 8px rgba(32,24,14,.05);
+  }
+  .search-wrap input:focus{outline:2px solid var(--orange);outline-offset:1px;}
+  .search-wrap input::placeholder{color:var(--ink-dim);}
+
+  .section-title{
+    font-family:'Fraunces',serif;font-size:16px;color:var(--ink);
+    margin:18px 0 12px;padding-top:14px;border-top:1px solid #EFE7D6;
+  }
+
+  .grid.folder-grid{
+    grid-template-columns:repeat(5,1fr);
+    gap:6px;
+  }
+  .grid.folder-grid .folder-card{padding:0;aspect-ratio:1/1;border-radius:12px;}
+  .grid.folder-grid .folder-icon{width:15px;height:15px;top:6px;right:6px;}
+  .grid.folder-grid .folder-name{font-size:9.5px;line-height:1.15;}
+  .grid.folder-grid .folder-count{font-size:8px;}
+  .grid.folder-grid .folder-card{padding:6px 5px;}
+
+  .folder-card{
+    border-radius:var(--radius);
+    padding:22px 16px;display:flex;flex-direction:column;justify-content:flex-end;
+    cursor:pointer;transition:transform .18s ease, box-shadow .18s ease;
+    text-align:left;position:relative;overflow:hidden;
+    box-shadow:0 2px 10px rgba(32,24,14,.05);
+  }
+  .folder-card:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(32,24,14,.12);}
+  .folder-card .folder-icon{
+    position:absolute;top:16px;right:16px;width:38px;height:38px;
+    color:rgba(255,255,255,.9);opacity:.9;
+  }
+  .folder-card .folder-icon svg{width:100%;height:100%;}
+  .folder-card .folder-name{font-weight:700;font-size:17px;color:#fff;}
+  .folder-card .folder-count{font-size:12.5px;color:rgba(255,255,255,.85);margin-top:2px;}
+
+  /* Modal */
+  .overlay{
+    position:fixed;inset:0;background:rgba(32,24,14,.55);
+    display:none;align-items:flex-start;justify-content:center;
+    padding:40px 16px;overflow-y:auto;z-index:50;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:#fff;border:1px solid #EFE7D6;border-radius:var(--radius);
+    width:100%;max-width:420px;padding:24px 22px 26px;
+  }
+  .modal h2{font-family:'Fraunces',serif;font-size:20px;margin:0 0 16px;color:var(--orange);}
+  .field{margin-bottom:13px;}
+  .field label{display:block;font-size:12.5px;color:var(--ink-dim);margin-bottom:5px;}
+  .field input, .field select, .field textarea{
+    width:100%;background:var(--surface-2);border:1px solid #EFE7D6;color:var(--ink);
+    padding:10px 11px;border-radius:8px;font-size:14px;font-family:inherit;
+  }
+  .field textarea{resize:vertical;min-height:64px;}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--orange);outline-offset:1px;}
+  .checkbox-field{display:flex;align-items:center;}
+  .checkbox-label{
+    display:flex !important;align-items:center;gap:9px;cursor:pointer;
+    font-size:14px !important;color:var(--ink) !important;margin:0 !important;
+  }
+  .checkbox-label input{width:auto !important;accent-color:var(--orange);cursor:pointer;}
+  .delivery-badge{
+    position:absolute;bottom:10px;left:10px;
+    background:rgba(62,154,99,.95);color:#fff;font-size:10.5px;font-weight:700;
+    padding:4px 9px;border-radius:20px;display:flex;align-items:center;gap:4px;
+    box-shadow:0 2px 5px rgba(0,0,0,.18);
+  }
+  .photo-input{
+    display:flex;align-items:center;gap:12px;
+  }
+  .photo-input-row{display:flex;gap:12px;}
+  .photo-slot{cursor:pointer;}
+  .photo-preview{
+    width:64px;height:64px;border-radius:10px;background:var(--surface-2);
+    background-size:cover;background-position:center;flex-shrink:0;
+    border:1.5px dashed #D9CDAF;display:flex;align-items:center;justify-content:center;
+  }
+  .photo-preview.filled{border-style:solid;border-color:#EFE7D6;}
+  .photo-preview.loading{opacity:.45;}
+  .photo-plus{color:#B7AB92;font-size:24px;font-weight:300;line-height:1;}
+
+  /* Photo gallery (card) */
+  .photo-gallery{
+    display:flex;width:100%;height:100%;overflow-x:auto;
+    scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  }
+  .photo-gallery::-webkit-scrollbar{display:none;}
+  .photo-gallery img{width:100%;height:100%;object-fit:cover;flex:0 0 100%;scroll-snap-align:center;cursor:zoom-in;}
+  .photo-dots{
+    position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+    display:flex;gap:5px;z-index:2;pointer-events:none;
+  }
+  .photo-dots .dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.55);transition:background .15s, width .15s;}
+  .photo-dots .dot.active{background:#fff;width:14px;border-radius:3px;}
+
+  /* Lightbox */
+  .lightbox-overlay{
+    position:fixed;inset:0;background:rgba(15,10,4,.94);z-index:200;
+    display:none;align-items:center;justify-content:center;
+  }
+  .lightbox-overlay.open{display:flex;}
+  .lightbox-close{
+    position:absolute;top:16px;right:16px;background:rgba(255,255,255,.14);border:none;color:#fff;
+    width:38px;height:38px;border-radius:50%;font-size:16px;cursor:pointer;z-index:2;
+  }
+  .lightbox-track{
+    display:flex;width:100%;height:100%;overflow-x:auto;
+    scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+  }
+  .lightbox-track img{width:100%;height:100%;object-fit:contain;flex:0 0 100%;scroll-snap-align:center;}
+  .lightbox-dots{
+    position:absolute;bottom:22px;left:50%;transform:translateX(-50%);
+    display:flex;gap:6px;z-index:2;
+  }
+  .lightbox-dots .dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.45);}
+  .lightbox-dots .dot.active{background:#fff;width:16px;border-radius:3px;}
+  .row-btns{display:flex;gap:10px;margin-top:18px;}
+  .btn{
+    flex:1;padding:11px;border-radius:9px;border:none;font-weight:700;font-size:14px;cursor:pointer;
+    font-family:inherit;
+  }
+  .btn-primary{background:var(--orange);color:#fff;}
+  .btn-primary:hover{background:var(--orange-dim);}
+  .btn-ghost{background:none;color:var(--ink-dim);border:1px solid #EFE7D6;}
+  .btn-ghost:hover{color:var(--ink);}
+  .pin-error{color:var(--rose);font-size:13px;margin-top:8px;display:none;}
+  .hint{font-size:11.5px;color:#9C8F73;margin-top:14px;line-height:1.6;}
+
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;padding:11px 20px;border-radius:9px;font-size:14px;font-weight:600;
+    opacity:0;transition:opacity .25s, transform .25s;pointer-events:none;z-index:80;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .install-tip{
+    max-width:1000px;margin:0 auto;padding:0 22px 30px;
+    font-size:12.5px;color:#9C8F73;line-height:1.7;
+  }
+  .install-tip b{color:var(--ink-dim);}
+
+  @media (prefers-reduced-motion:reduce){
+    .card, .folder-card, .toast{transition:none;}
+  }
+
+  /* Category count dot */
+  .folder-card .folder-count::before{
+    content:'';display:inline-block;width:6px;height:6px;border-radius:50%;
+    background:rgba(255,255,255,.9);margin-right:5px;vertical-align:middle;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wordmark">ገበያ</div>
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="🔍 ምርት ፈልግ...">
+  </div>
+  <button class="lang-btn" id="langToggleBtn" type="button"></button>
+  <button class="admin-btn" id="adminOpenBtn" title="ለጥፍ" aria-label="ለጥፍ"></button>
+</header>
+
+<div class="hero">
+  <p id="heroText">የቤት ዕቃ፣ ኤሌክትሮኒክስ፣ ተሽከርካሪና ስልክ የሚገዙበትና የሚሸጡበት ቦታ። አዲስ ዕቃ ሲወጣ እዚህ ይለጠፋል፣ የፈለጉትን አግኝተው በስልክ ይደውሉ።</p>
+  <p class="buy-line" id="buyLineText">📦 ማንኛውም ያገለገሉ እቃዎች እንገዛለን — ላሉዎት ንብረቶች ይደውሉልን።</p>
+</div>
+
+<main>
+  <div id="breadcrumb" class="breadcrumb" style="display:none;"></div>
+  <div id="grid" class="grid"></div>
+  <div id="allItemsSection" style="display:none;">
+    <div class="section-title" id="allItemsTitle">ሁሉም ዕቃዎች</div>
+    <div id="allGrid" class="grid"></div>
+  </div>
+  <div id="emptyState" class="empty" style="display:none;">
+    <div class="big" id="emptyBig">ገበያው ገና ባዶ ነው</div>
+    <div id="emptySmall">የመጀመሪያውን ዕቃ ለመለጠፍ ከላይ በስተቀኝ ጥግ ላይ ይጫኑ</div>
+  </div>
+  <div id="loadErrorState" class="empty" style="display:none;">
+    <div class="big" id="loadErrorBig">ዕቃዎቹን መጫን አልተቻለም</div>
+    <div id="loadErrorSmall">የኢንተርኔት ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ</div>
+    <button id="retryLoadBtn" style="margin-top:14px;padding:10px 20px;border-radius:10px;border:1px solid #D9CDAF;background:#fff;cursor:pointer;">🔄 እንደገና ይሞክሩ</button>
+  </div>
+</main>
+
+<div class="install-tip" id="installTip">
+  <b id="installTipBold">ማሳሰቢያ፦</b> <span id="installTipText">ይህን ገጽ በስልክዎ ላይ እንደ አፕ ለመጫን — Chrome ላይ ⋮ ምናሌ → «Add to Home screen» ይጫኑ፣ ወይም iPhone Safari ላይ Share → «Add to Home Screen» ይጫኑ።</span>
+</div>
+
+<!-- Admin overlay -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div id="pinScreen">
+      <h2 id="pinTitle">የመግቢያ ኮድ</h2>
+      <div class="field">
+        <label id="pinInputLabel">ፒን አስገባ</label>
+        <input type="password" id="pinInput" inputmode="numeric" placeholder="••••">
+      </div>
+      <div class="pin-error" id="pinError">ትክክል አይደለም፣ እንደገና ይሞክሩ</div>
+      <div class="row-btns">
+        <button class="btn btn-ghost" id="pinCancel">ተመለስ</button>
+        <button class="btn btn-primary" id="pinSubmit">ግባ</button>
+      </div>
+    </div>
+
+    <div id="formScreen" style="display:none;">
+      <h2 id="formTitle">አዲስ ዕቃ ለጥፍ</h2>
+      <div class="field">
+        <label id="fNameLabel">የዕቃ ስም</label>
+        <input type="text" id="fName" placeholder="ለምሳሌ፦ ስልክ Samsung A14">
+      </div>
+      <div class="field">
+        <label id="fCatLabel">ምድብ</label>
+        <select id="fCat">
+          <option value="ኤሌክትሮኒክስ">ኤሌክትሮኒክስ</option>
+          <option value="የቤት ዕቃ">የቤት ዕቃ</option>
+          <option value="ተሽከርካሪ">ተሽከርካሪ</option>
+          <option value="ስልኮች">ስልኮች</option>
+          <option value="ኮስሜቲክስ">ኮስሜቲክስ</option>
+        </select>
+      </div>
+      <div class="field" id="fSubtypeField" style="display:none;">
+        <label id="fSubtypeLabel">ዓይነት</label>
+        <input type="text" id="fSubtype" placeholder="ለምሳሌ፦ Samsung">
+      </div>
+      <div class="field">
+        <label id="fPriceLabel">ዋጋ (ብር)</label>
+        <input type="number" id="fPrice" placeholder="2500">
+      </div>
+      <div class="field">
+        <label id="fDescLabel">መግለጫ</label>
+        <textarea id="fDesc" placeholder="አጭር መግለጫ..."></textarea>
+      </div>
+      <div class="field">
+        <label id="fPhoneLabel">ስልክ ቁጥር</label>
+        <input type="tel" id="fPhone" placeholder="0912345678" value="0940501400">
+      </div>
+      <div class="field checkbox-field">
+        <label class="checkbox-label">
+          <input type="checkbox" id="fDelivery">
+          <span id="fDeliveryLabel">🚚 ማድረስ (Delivery) አለን</span>
+        </label>
+      </div>
+      <div class="field">
+        <label id="fPhotoLabel">ፎቶ (እስከ 2)</label>
+        <div class="photo-input-row">
+          <label class="photo-slot" for="fPhoto1">
+            <div class="photo-preview" id="photoPreview1"><span class="photo-plus">+</span></div>
+          </label>
+          <input type="file" id="fPhoto1" accept="image/*" style="display:none;">
+          <label class="photo-slot" for="fPhoto2">
+            <div class="photo-preview" id="photoPreview2"><span class="photo-plus">+</span></div>
+          </label>
+          <input type="file" id="fPhoto2" accept="image/*" style="display:none;">
+        </div>
+      </div>
+      <div class="row-btns">
+        <button class="btn btn-ghost" id="formCancel">ዝጋ</button>
+        <button class="btn btn-primary" id="formSubmit">ለጥፍ</button>
+      </div>
+      <div class="hint" id="formHint">ይህ ፒን በኮዱ ውስጥ የተቀመጠ ቀላል መከላከያ ብቻ ነው፤ ሙሉ ደህንነት አይሰጥም።</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="lightbox-overlay" id="lightboxOverlay" onclick="if(event.target===this) closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <div class="lightbox-track" id="lightboxTrack"></div>
+  <div class="lightbox-dots" id="lightboxDots"></div>
+</div>
+
+<script>
+const ADMIN_PIN = "733225"; // change this in the code to your own PIN
+let isAdmin = false;
+
+// ===== Language support =====
+let lang = 'am';
+try{ lang = localStorage.getItem('gebeya-lang') || 'am'; }catch(e){}
+
+const TRANSLATIONS = {
+  am: {
+    langBtn: 'English',
+    searchPlaceholder: '🔍 ምርት ፈልግ...',
+    hero: 'የቤት ዕቃ፣ ኤሌክትሮኒክስ፣ ተሽከርካሪና ስልክ የሚገዙበትና የሚሸጡበት ቦታ። አዲስ ዕቃ ሲወጣ እዚህ ይለጠፋል፣ የፈለጉትን አግኝተው በስልክ ይደውሉ።',
+    buyLine: '📦 ማንኛውም ያገለገሉ እቃዎች እንገዛለን — ላሉዎት ንብረቶች ይደውሉልን።',
+    allItemsTitle: 'ሁሉም ዕቃዎች',
+    emptyBig: 'ገበያው ገና ባዶ ነው',
+    emptySmall: 'የመጀመሪያውን ዕቃ ለመለጠፍ ከላይ በስተቀኝ ጥግ ላይ ይጫኑ',
+    loadErrorBig: 'ዕቃዎቹን መጫን አልተቻለም',
+    loadErrorSmall: 'የኢንተርኔት ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ',
+    installTipBold: 'ማሳሰቢያ፦',
+    installTipText: 'ይህን ገጽ በስልክዎ ላይ እንደ አፕ ለመጫን — Chrome ላይ ⋮ ምናሌ → «Add to Home screen» ይጫኑ፣ ወይም iPhone Safari ላይ Share → «Add to Home Screen» ይጫኑ።',
+    pinTitle: 'የመግቢያ ኮድ',
+    pinInputLabel: 'ፒን አስገባ',
+    pinError: 'ትክክል አይደለም፣ እንደገና ይሞክሩ',
+    pinCancel: 'ተመለስ',
+    pinSubmit: 'ግባ',
+    formTitle: 'አዲስ ዕቃ ለጥፍ',
+    fNameLabel: 'የዕቃ ስም',
+    fNamePlaceholder: 'ለምሳሌ፦ ስልክ Samsung A14',
+    fCatLabel: 'ምድብ',
+    fPriceLabel: 'ዋጋ (ብር)',
+    fDescLabel: 'መግለጫ',
+    fDescPlaceholder: 'አጭር መግለጫ...',
+    fPhoneLabel: 'ስልክ ቁጥር',
+    fDeliveryLabel: '🚚 ማድረስ (Delivery) አለን',
+    fPhotoLabel: 'ፎቶ',
+    formCancel: 'ዝጋ',
+    formSubmit: 'ለጥፍ',
+    formHint: 'ይህ ፒን በኮዱ ውስጥ የተቀመጠ ቀላል መከላከያ ብቻ ነው፤ ሙሉ ደህንነት አይሰጥም።',
+    subtypeLabels: { 'ስልኮች':'የስልክ ዓይነት (ለምሳሌ፦ Samsung)', 'ተሽከርካሪ':'የተሽከርካሪ ዓይነት (ለምሳሌ፦ መኪና)' },
+    subtypeDefault: 'ዓይነት',
+    subtypePlaceholder: 'ለምሳሌ፦ Samsung',
+    categories: { 'ኤሌክትሮኒክስ':'ኤሌክትሮኒክስ', 'የቤት ዕቃ':'የቤት ዕቃ', 'ተሽከርካሪ':'ተሽከርካሪ', 'ስልኮች':'ስልኮች', 'ኮስሜቲክስ':'ኮስሜቲክስ' },
+    otherLabel: 'ሌላ',
+    unknownSubtype: 'ያልታወቀ',
+    itemsSuffix: 'ዕቃ',
+    deliveryBadge: '🚚 ማድረስ አለን',
+    callBtn: '📞 ደውል — ',
+    priceSuffix: ' ብር',
+    noComments: 'ገና አስተያየት የለም',
+    commentPlaceholder: 'አስተያየት ይጻፉ...',
+    commentSend: 'ላክ',
+    backToCategories: '← ሁሉም ምድቦች',
+    searchResults: 'ውጤት',
+    validationMsg: 'ስም፣ ዋጋ እና ስልክ ቁጥር ያስፈልጋል',
+    postedMsg: 'ተለጥፏል!',
+    postErrorMsg: 'ስህተት ተፈጥሯል፣ እንደገና ይሞክሩ',
+    photoErrorMsg: 'ፎቶው መጫን አልቻለም፣ ሌላ ፎቶ ይሞክሩ',
+    photoWaitMsg: 'ፎቶው በመዘጋጀት ላይ ነው፣ እባክዎ ትንሽ ይጠብቁ...',
+    deleteConfirm: 'ይህን ዕቃ መሰረዝ ይፈልጋሉ?',
+    deletedMsg: 'ተሰርዟል',
+    deleteErrorMsg: 'መሰረዝ አልተሳካም'
+  },
+  en: {
+    langBtn: 'አማርኛ',
+    searchPlaceholder: '🔍 Search products...',
+    hero: 'A place to buy and sell home goods, electronics, vehicles, and phones. New items are posted here — find what you want and call to buy.',
+    buyLine: '📦 We buy any used items — call us about what you have.',
+    allItemsTitle: 'All Items',
+    emptyBig: 'The market is empty right now',
+    emptySmall: 'Tap the top-right corner to post the first item',
+    loadErrorBig: 'Could not load items',
+    loadErrorSmall: 'Check your internet connection and try again',
+    installTipBold: 'Tip:',
+    installTipText: 'To install this page as an app on your phone — on Chrome tap ⋮ menu → "Add to Home screen", or on iPhone Safari tap Share → "Add to Home Screen".',
+    pinTitle: 'Access Code',
+    pinInputLabel: 'Enter PIN',
+    pinError: 'Incorrect, please try again',
+    pinCancel: 'Back',
+    pinSubmit: 'Enter',
+    formTitle: 'Post New Item',
+    fNameLabel: 'Item Name',
+    fNamePlaceholder: 'e.g. Samsung A14 phone',
+    fCatLabel: 'Category',
+    fPriceLabel: 'Price (Birr)',
+    fDescLabel: 'Description',
+    fDescPlaceholder: 'Short description...',
+    fPhoneLabel: 'Phone Number',
+    fDeliveryLabel: '🚚 We offer delivery',
+    fPhotoLabel: 'Photo',
+    formCancel: 'Close',
+    formSubmit: 'Post',
+    formHint: 'This PIN is a simple protection stored in the code; it does not provide full security.',
+    subtypeLabels: { 'ስልኮች':'Phone type (e.g. Samsung)', 'ተሽከርካሪ':'Vehicle type (e.g. Car)' },
+    subtypeDefault: 'Type',
+    subtypePlaceholder: 'e.g. Samsung',
+    categories: { 'ኤሌክትሮኒክስ':'Electronics', 'የቤት ዕቃ':'Home Goods', 'ተሽከርካሪ':'Vehicles', 'ስልኮች':'Phones', 'ኮስሜቲክስ':'Cosmetics' },
+    otherLabel: 'Other',
+    unknownSubtype: 'Other',
+    itemsSuffix: 'items',
+    deliveryBadge: '🚚 We deliver',
+    callBtn: '📞 Call — ',
+    priceSuffix: ' Birr',
+    noComments: 'No comments yet',
+    commentPlaceholder: 'Write a comment...',
+    commentSend: 'Send',
+    backToCategories: '← All Categories',
+    searchResults: 'results',
+    validationMsg: 'Name, price, and phone number are required',
+    postedMsg: 'Posted!',
+    postErrorMsg: 'An error occurred, please try again',
+    photoErrorMsg: 'Could not load the photo, try another one',
+    photoWaitMsg: 'Photo is still processing, please wait...',
+    deleteConfirm: 'Do you want to delete this item?',
+    deletedMsg: 'Deleted',
+    deleteErrorMsg: 'Delete failed'
+  }
+};
+
+function t(key){ return (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ?? TRANSLATIONS.am[key]; }
+function catLabel(cat){ return t('categories')[cat] || cat; }
+
+function applyStaticText(){
+  document.documentElement.lang = (lang === 'en') ? 'en' : 'am';
+  document.getElementById('langToggleBtn').textContent = t('langBtn');
+  document.getElementById('searchInput').placeholder = t('searchPlaceholder');
+  document.getElementById('heroText').textContent = t('hero');
+  document.getElementById('buyLineText').textContent = t('buyLine');
+  document.getElementById('allItemsTitle').textContent = t('allItemsTitle');
+  document.getElementById('emptyBig').textContent = t('emptyBig');
+  document.getElementById('emptySmall').textContent = t('emptySmall');
+  document.getElementById('loadErrorBig').textContent = t('loadErrorBig');
+  document.getElementById('loadErrorSmall').textContent = t('loadErrorSmall');
+  document.getElementById('installTipBold').textContent = t('installTipBold');
+  document.getElementById('installTipText').textContent = t('installTipText');
+  document.getElementById('pinTitle').textContent = t('pinTitle');
+  document.getElementById('pinInputLabel').textContent = t('pinInputLabel');
+  document.getElementById('pinError').textContent = t('pinError');
+  document.getElementById('pinCancel').textContent = t('pinCancel');
+  document.getElementById('pinSubmit').textContent = t('pinSubmit');
+  document.getElementById('formTitle').textContent = t('formTitle');
+  document.getElementById('fNameLabel').textContent = t('fNameLabel');
+  document.getElementById('fName').placeholder = t('fNamePlaceholder');
+  document.getElementById('fCatLabel').textContent = t('fCatLabel');
+  document.getElementById('fPriceLabel').textContent = t('fPriceLabel');
+  document.getElementById('fDescLabel').textContent = t('fDescLabel');
+  document.getElementById('fDesc').placeholder = t('fDescPlaceholder');
+  document.getElementById('fPhoneLabel').textContent = t('fPhoneLabel');
+  document.getElementById('fDeliveryLabel').textContent = t('fDeliveryLabel');
+  document.getElementById('fPhotoLabel').textContent = t('fPhotoLabel');
+  document.getElementById('formCancel').textContent = t('formCancel');
+  document.getElementById('formSubmit').textContent = t('formSubmit');
+  document.getElementById('formHint').textContent = t('formHint');
+  // category select options (keep values as data keys, translate visible text)
+  document.querySelectorAll('#fCat option').forEach(opt=>{
+    opt.textContent = catLabel(opt.value);
+  });
+  updateSubtypeField();
+}
+
+document.getElementById('langToggleBtn').addEventListener('click', ()=>{
+  lang = (lang === 'am') ? 'en' : 'am';
+  try{ localStorage.setItem('gebeya-lang', lang); }catch(e){}
+  applyStaticText();
+  render();
+});
+
+const grid = document.getElementById('grid');
+const emptyState = document.getElementById('emptyState');
+const overlay = document.getElementById('overlay');
+const pinScreen = document.getElementById('pinScreen');
+const formScreen = document.getElementById('formScreen');
+const toastEl = document.getElementById('toast');
+
+function showToast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  setTimeout(()=>toastEl.classList.remove('show'), 2200);
+}
+
+const TAP_COUNT_REQUIRED = 7;
+const TAP_RESET_MS = 1500;
+let tapCount = 0;
+let lastTapTime = 0;
+
+document.getElementById('adminOpenBtn').addEventListener('click', ()=>{
+  const now = Date.now();
+  if(now - lastTapTime > TAP_RESET_MS){
+    tapCount = 0;
+  }
+  lastTapTime = now;
+  tapCount++;
+
+  if(isAdmin){
+    // already unlocked this session — open the posting form directly
+    overlay.classList.add('open');
+    pinScreen.style.display='none';
+    formScreen.style.display='block';
+    return;
+  }
+
+  if(tapCount < TAP_COUNT_REQUIRED) return;
+  tapCount = 0;
+
+  overlay.classList.add('open');
+  pinScreen.style.display='block';
+  formScreen.style.display='none';
+  document.getElementById('pinInput').value='';
+  document.getElementById('pinError').style.display='none';
+});
+function updateSubtypeField(){
+  const cat = document.getElementById('fCat').value;
+  const field = document.getElementById('fSubtypeField');
+  const label = document.getElementById('fSubtypeLabel');
+  const subtypeLabels = t('subtypeLabels');
+  document.getElementById('fSubtype').placeholder = t('subtypePlaceholder');
+  if(subtypeLabels[cat]){
+    field.style.display='block';
+    label.textContent = subtypeLabels[cat];
+  } else {
+    field.style.display='none';
+    document.getElementById('fSubtype').value='';
+  }
+}
+document.getElementById('fCat').addEventListener('change', updateSubtypeField);
+
+document.getElementById('pinCancel').addEventListener('click', ()=>overlay.classList.remove('open'));
+document.getElementById('formCancel').addEventListener('click', ()=>overlay.classList.remove('open'));
+
+document.getElementById('pinSubmit').addEventListener('click', ()=>{
+  const val = document.getElementById('pinInput').value;
+  if(val === ADMIN_PIN){
+    isAdmin = true;
+    pinScreen.style.display='none';
+    formScreen.style.display='block';
+    updateSubtypeField();
+    render(); // re-render to show delete buttons
+    prefillPhone();
+  } else {
+    document.getElementById('pinError').style.display='block';
+  }
+});
+
+async function prefillPhone(){
+  try{
+    const phone = localStorage.getItem('last-phone');
+    if(phone) document.getElementById('fPhone').value = phone;
+  }catch(e){}
+}
+
+let photoDataUrls = [null, null];
+let photoPending = [null, null]; // in-flight compression promises, so submit can wait for them
+function wirePhotoInput(inputId, previewId, idx){
+  document.getElementById(inputId).addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const prev = document.getElementById(previewId);
+    prev.classList.add('loading');
+    const task = compressImage(file).then(dataUrl=>{
+      photoDataUrls[idx] = dataUrl;
+      prev.style.backgroundImage = `url(${dataUrl})`;
+      prev.classList.add('filled');
+      prev.classList.remove('loading');
+      prev.innerHTML = '';
+    }).catch(()=>{
+      prev.classList.remove('loading');
+      showToast(t('photoErrorMsg'));
+    }).finally(()=>{
+      photoPending[idx] = null;
+    });
+    photoPending[idx] = task;
+  });
+}
+wirePhotoInput('fPhoto1', 'photoPreview1', 0);
+wirePhotoInput('fPhoto2', 'photoPreview2', 1);
+
+function compressImage(file, maxW=800, quality=0.72){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('read failed'));
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onerror = () => reject(new Error('decode failed'));
+      img.onload = ()=>{
+        const scale = Math.min(1, maxW/img.width);
+        const w = Math.round(img.width*scale), h = Math.round(img.height*scale);
+        const canvas = document.createElement('canvas');
+        canvas.width=w; canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('formSubmit').addEventListener('click', async ()=>{
+  const name = document.getElementById('fName').value.trim();
+  const cat = document.getElementById('fCat').value;
+  const subtype = document.getElementById('fSubtype').value.trim();
+  const price = document.getElementById('fPrice').value.trim();
+  const desc = document.getElementById('fDesc').value.trim();
+  const phone = document.getElementById('fPhone').value.trim();
+  const delivery = document.getElementById('fDelivery').checked;
+
+  if(!name || !price || !phone){
+    showToast(t('validationMsg'));
+    return;
+  }
+
+  // wait for any photo still being compressed, so it isn't posted without it
+  const stillPending = photoPending.filter(Boolean);
+  if(stillPending.length){
+    showToast(t('photoWaitMsg'));
+    await Promise.all(stillPending);
+  }
+
+  const photos = photoDataUrls.filter(Boolean);
+  const item = {
+    name, cat, subtype: subtype || null, price, desc, phone, delivery,
+    photos,
+    photo: photos[0] || null,
+    ts: Date.now()
+  };
+
+  const submitBtn = document.getElementById('formSubmit');
+  submitBtn.disabled = true;
+  try{
+    const res = await fetch('/api/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(item)
+    });
+    if(!res.ok) throw new Error('bad response');
+    try{ localStorage.setItem('last-phone', phone); }catch(e){}
+    showToast(t('postedMsg'));
+    overlay.classList.remove('open');
+    resetForm();
+    await loadAndRender();
+  }catch(err){
+    showToast(t('postErrorMsg'));
+  }finally{
+    submitBtn.disabled = false;
+  }
+});
+
+function resetForm(){
+  document.getElementById('fName').value='';
+  document.getElementById('fSubtype').value='';
+  document.getElementById('fPrice').value='';
+  document.getElementById('fDesc').value='';
+  document.getElementById('fDelivery').checked=false;
+  ['photoPreview1','photoPreview2'].forEach(id=>{
+    const prev = document.getElementById(id);
+    prev.style.backgroundImage='';
+    prev.classList.remove('filled');
+    prev.innerHTML = '<span class="photo-plus">+</span>';
+  });
+  document.getElementById('fPhoto1').value='';
+  document.getElementById('fPhoto2').value='';
+  photoDataUrls = [null, null];
+  updateSubtypeField();
+}
+
+async function deleteItem(id){
+  if(!confirm(t('deleteConfirm'))) return;
+  try{
+    const res = await fetch('/api/items?id=' + encodeURIComponent(id), { method: 'DELETE' });
+    if(!res.ok) throw new Error('bad response');
+    showToast(t('deletedMsg'));
+    await loadAndRender();
+  }catch(e){
+    showToast(t('deleteErrorMsg'));
+  }
+}
+
+let currentItems = [];
+let view = { level:'home' }; // {level:'home'} | {level:'category', cat} | {level:'subtype', cat, subtype}
+let searchQuery = '';
+
+document.getElementById('searchInput').addEventListener('input', (e)=>{
+  searchQuery = e.target.value.trim();
+  render();
+});
+
+const CATEGORIES = ['ኤሌክትሮኒክስ', 'የቤት ዕቃ', 'ተሽከርካሪ', 'ስልኮች', 'ኮስሜቲክስ'];
+const HAS_SUBTYPE = { 'ስልኮች':true, 'ተሽከርካሪ':true };
+const CAT_COLORS = {
+  'የቤት ዕቃ':'#3E8E5A',
+  'ኤሌክትሮኒክስ':'#2C6F99',
+  'ተሽከርካሪ':'#C4632A',
+  'ስልኮች':'#6C5FB8',
+  'ኮስሜቲክስ':'#C24E7A',
+  'default':'#756B5A'
+};
+function catColor(cat){ return CAT_COLORS[cat] || CAT_COLORS['default']; }
+
+const ICONS = {
+  'የቤት ዕቃ': {
+    svg: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 26v10a2 2 0 0 0 2 2h32a2 2 0 0 0 2-2V26"/>
+      <path d="M4 26c0-4 2-8 6-8h28c4 0 6 4 6 8"/>
+      <path d="M10 18v-4a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3v4"/>
+      <path d="M14 38v-6M34 38v-6"/>
+    </svg>`,
+    label: 'የቤት ዕቃ'
+  },
+  'ኤሌክትሮኒክስ': {
+    svg: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="14" y="4" width="20" height="32" rx="2.5"/>
+      <path d="M14 30h20"/>
+      <circle cx="24" cy="33" r="0.6" fill="currentColor"/>
+      <path d="M6 40h36" stroke-width="2.4"/>
+    </svg>`,
+    label: 'ኤሌክትሮኒክስ'
+  },
+  'ተሽከርካሪ': {
+    svg: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 30l3-11c.6-2 2.4-3.4 4.5-3.4h21c2.1 0 3.9 1.4 4.5 3.4l3 11"/>
+      <path d="M4 30h40v6a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2H12v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6Z"/>
+      <circle cx="13" cy="30" r="3.4"/>
+      <circle cx="35" cy="30" r="3.4"/>
+      <path d="M11 19h26"/>
+    </svg>`,
+    label: 'ተሽከርካሪ'
+  },
+  'ስልኮች': {
+    svg: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="15" y="4" width="18" height="40" rx="3"/>
+      <path d="M15 36h18"/>
+      <circle cx="24" cy="40" r="0.6" fill="currentColor"/>
+    </svg>`,
+    label: 'ስልኮች'
+  },
+  'ኮስሜቲክስ': {
+    svg: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 20h12v20a3 3 0 0 1-3 3h-6a3 3 0 0 1-3-3V20Z"/>
+      <path d="M20 20v-5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5"/>
+      <path d="M21 8h6"/>
+      <path d="M24 8V5"/>
+      <path d="M18 28h12"/>
+    </svg>`,
+    label: 'ኮስሜቲክስ'
+  },
+  'default': {
+    svg: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 16l18-8 18 8-18 8-18-8Z"/>
+      <path d="M6 16v16l18 8 18-8V16"/>
+      <path d="M24 24v16"/>
+    </svg>`,
+    label: 'ሌላ'
+  }
+};
+
+function categoryPlaceholder(cat){
+  const icon = ICONS[cat] || ICONS['default'];
+  const label = ICONS[cat] ? catLabel(cat) : t('otherLabel');
+  return `<div class="no-photo">${icon.svg}<span>${escapeHtml(label)}</span></div>`;
+}
+
+async function loadAndRender(){
+  const loadErrorState = document.getElementById('loadErrorState');
+  try{
+    const res = await fetch('/api/items');
+    if(!res.ok) throw new Error('bad response: ' + res.status);
+    const items = await res.json();
+    currentItems = items;
+    loadErrorState.style.display = 'none';
+    render();
+  }catch(e){
+    // a real load failure (network/server error) is different from a genuinely empty market —
+    // show a retry state instead of silently claiming there are no items
+    currentItems = [];
+    grid.innerHTML = '';
+    emptyState.style.display = 'none';
+    loadErrorState.style.display = 'block';
+    console.error('gebeya: failed to load items', e);
+  }
+}
+document.getElementById('retryLoadBtn').addEventListener('click', loadAndRender);
+
+function goHome(){ view = { level:'home' }; render(); }
+function openCategory(cat){ view = { level:'category', cat }; render(); }
+function openSubtype(cat, subtype){ view = { level:'subtype', cat, subtype }; render(); }
+
+function renderBreadcrumb(){
+  const bc = document.getElementById('breadcrumb');
+  if(searchQuery){
+    bc.style.display = 'flex';
+    bc.innerHTML = `<span class="crumb-title">🔍 "${escapeHtml(searchQuery)}" ${escapeHtml(t('searchResults'))}</span>`;
+    return;
+  }
+  if(view.level === 'home'){
+    bc.style.display = 'none';
+    bc.innerHTML = '';
+    return;
+  }
+  bc.style.display = 'flex';
+  if(view.level === 'category'){
+    bc.innerHTML = `<span class="crumb-back" onclick="goHome()">${escapeHtml(t('backToCategories'))}</span><span class="crumb-title">${escapeHtml(catLabel(view.cat))}</span>`;
+  } else if(view.level === 'subtype'){
+    bc.innerHTML = `<span class="crumb-back" onclick="openCategory('${view.cat}')">← ${escapeHtml(catLabel(view.cat))}</span><span class="crumb-title">${escapeHtml(view.subtype)}</span>`;
+  }
+}
+
+function render(){
+  renderBreadcrumb();
+  if(searchQuery){
+    document.getElementById('allItemsSection').style.display = 'none';
+    grid.classList.remove('folder-grid');
+    const q = searchQuery.toLowerCase();
+    const results = currentItems.filter(it=>
+      (it.name||'').toLowerCase().includes(q) ||
+      (it.desc||'').toLowerCase().includes(q) ||
+      (it.cat||'').toLowerCase().includes(q) ||
+      (it.subtype||'').toLowerCase().includes(q)
+    );
+    renderItemsGrid(results);
+    return;
+  }
+  if(view.level === 'home'){
+    renderHomeFolders();
+  } else if(view.level === 'category'){
+    document.getElementById('allItemsSection').style.display = 'none';
+    renderCategory();
+  } else if(view.level === 'subtype'){
+    document.getElementById('allItemsSection').style.display = 'none';
+    grid.classList.remove('folder-grid');
+    renderItemsGrid(currentItems.filter(it => it.cat === view.cat && (it.subtype||t('unknownSubtype')) === view.subtype));
+  }
+}
+
+function renderHomeFolders(){
+  document.getElementById('allItemsSection').style.display = 'block';
+  grid.classList.add('folder-grid');
+  emptyState.style.display='none';
+  grid.innerHTML = CATEGORIES.map(cat=>{
+    const count = currentItems.filter(it=>it.cat===cat).length;
+    const icon = ICONS[cat] || ICONS['default'];
+    return `
+      <div class="folder-card" style="background:${catColor(cat)}" onclick="openCategory('${cat}')">
+        <div class="folder-icon">${icon.svg}</div>
+        <div class="folder-name">${escapeHtml(catLabel(cat))}</div>
+        <div class="folder-count">${count} ${escapeHtml(t('itemsSuffix'))}</div>
+      </div>
+    `;
+  }).join('');
+  renderItemsGrid(currentItems, document.getElementById('allGrid'));
+  if(currentItems.length === 0){
+    emptyState.style.display='block';
+  }
+}
+
+function renderCategory(){
+  const catItems = currentItems.filter(it=>it.cat===view.cat);
+  if(HAS_SUBTYPE[view.cat]){
+    grid.classList.add('folder-grid');
+    const groups = {};
+    catItems.forEach(it=>{
+      const key = it.subtype || t('unknownSubtype');
+      (groups[key] = groups[key] || []).push(it);
+    });
+    const subtypes = Object.keys(groups);
+    if(subtypes.length === 0){
+      grid.innerHTML = '';
+      emptyState.style.display='block';
+      return;
+    }
+    emptyState.style.display='none';
+    const icon = ICONS[view.cat] || ICONS['default'];
+    const col = catColor(view.cat);
+    grid.innerHTML = subtypes.map(st=>`
+      <div class="folder-card" style="background:${col}" onclick="openSubtype('${view.cat}','${st.replace(/'/g,"\\'")}')">
+        <div class="folder-icon">${icon.svg}</div>
+        <div class="folder-name">${escapeHtml(st)}</div>
+        <div class="folder-count">${groups[st].length} ${escapeHtml(t('itemsSuffix'))}</div>
+      </div>
+    `).join('');
+  } else {
+    grid.classList.remove('folder-grid');
+    renderItemsGrid(catItems);
+  }
+}
+
+function likedKey(id){ return 'liked:'+id; }
+
+function findItem(id){ return currentItems.find(it => it._id === id); }
+
+function getLikeCount(id){
+  const item = findItem(id);
+  return item ? (item.likes || 0) : 0;
+}
+function likedByMe(id){
+  try{ return localStorage.getItem(likedKey(id))==='1'; }catch(e){ return false; }
+}
+async function toggleLike(id){
+  const wasLiked = likedByMe(id);
+  const btn = document.querySelector(`.like-btn[data-id="${id}"]`);
+  if(btn) btn.disabled = true;
+  try{
+    const res = await fetch('/api/items', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, action: wasLiked ? 'unlike' : 'like' })
+    });
+    if(!res.ok) throw new Error('bad response');
+    const updated = await res.json();
+    const item = findItem(id);
+    if(item){ item.likes = updated.likes; item.comments = updated.comments; }
+    try{ localStorage.setItem(likedKey(id), wasLiked ? '0' : '1'); }catch(e){}
+    if(btn) btn.innerHTML = (wasLiked?'🤍':'❤️') + ' <span class="like-count">'+(updated.likes||0)+'</span>';
+  }catch(e){
+    showToast(t('postErrorMsg'));
+  }finally{
+    if(btn) btn.disabled = false;
+  }
+}
+
+function getComments(id){
+  const item = findItem(id);
+  return (item && item.comments) || [];
+}
+function renderComments(id){
+  const list = getComments(id);
+  if(list.length===0) return `<div class="no-comments">${escapeHtml(t('noComments'))}</div>`;
+  return list.map(c=>`<div class="comment-item">${escapeHtml(c)}</div>`).join('');
+}
+function toggleComments(id){
+  const panel = document.getElementById('comments-'+id);
+  if(panel) panel.style.display = (panel.style.display==='none') ? 'block' : 'none';
+}
+async function submitComment(id){
+  const input = document.getElementById('cinput-'+id);
+  const text = input.value.trim();
+  if(!text) return;
+  const btn = input.nextElementSibling;
+  if(btn) btn.disabled = true;
+  try{
+    const res = await fetch('/api/items', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, action: 'comment', text })
+    });
+    if(!res.ok) throw new Error('bad response');
+    const updated = await res.json();
+    const item = findItem(id);
+    if(item){ item.likes = updated.likes; item.comments = updated.comments; }
+    input.value='';
+    const listEl = document.getElementById('clist-'+id);
+    if(listEl) listEl.innerHTML = renderComments(id);
+    const countEl = document.querySelector(`.comment-toggle[data-id="${id}"] .comment-count`);
+    if(countEl) countEl.textContent = (updated.comments||[]).length;
+  }catch(e){
+    showToast(t('postErrorMsg'));
+  }finally{
+    if(btn) btn.disabled = false;
+  }
+}
+
+function renderItemsGrid(items, container){
+  container = container || grid;
+  const isMain = (container === grid);
+  if(items.length === 0){
+    container.innerHTML = '';
+    if(isMain) emptyState.style.display='block';
+    return;
+  }
+  if(isMain) emptyState.style.display='none';
+  container.innerHTML = items.map(it=>{
+    const photos = (it.photos && it.photos.length) ? it.photos : (it.photo ? [it.photo] : []);
+    const photoHtml = photos.length
+      ? buildPhotoGallery(photos, it.name)
+      : categoryPlaceholder(it.cat);
+    const delBtn = isAdmin ? `<button class="del-btn" onclick="deleteItem('${it._id}')">✕</button>` : '';
+    const deliveryBadge = it.delivery ? `<div class="delivery-badge">${escapeHtml(t('deliveryBadge'))}</div>` : '';
+    const telHref = 'tel:' + it.phone.replace(/\s+/g,'');
+    const liked = likedByMe(it._id);
+    const likeCount = getLikeCount(it._id);
+    const commentCount = getComments(it._id).length;
+    const catText = it.cat ? catLabel(it.cat) : '';
+    return `
+      <div class="card">
+        <div class="photo-wrap">
+          ${photoHtml}
+          <div class="tag">${escapeHtml(it.price)}${escapeHtml(t('priceSuffix'))}</div>
+          ${deliveryBadge}
+          ${delBtn}
+        </div>
+        <div class="card-body">
+          <div class="cat" style="color:${catColor(it.cat)}">${escapeHtml(catText)}${it.subtype ? ' · ' + escapeHtml(it.subtype) : ''}</div>
+          <div class="name">${escapeHtml(it.name)}</div>
+          ${it.desc ? `<div class="desc">${escapeHtml(it.desc)}</div>` : ''}
+          <a class="call-btn" href="${telHref}">${escapeHtml(t('callBtn'))}${escapeHtml(it.phone)}</a>
+          <div class="engage-row">
+            <button class="like-btn" data-id="${it._id}" onclick="toggleLike('${it._id}')">${liked?'❤️':'🤍'} <span class="like-count">${likeCount}</span></button>
+            <button class="comment-toggle" data-id="${it._id}" onclick="toggleComments('${it._id}')">💬 <span class="comment-count">${commentCount}</span></button>
+          </div>
+          <div class="comments-panel" id="comments-${it._id}" style="display:none;">
+            <div class="comments-list" id="clist-${it._id}">${renderComments(it._id)}</div>
+            <div class="comment-input-row">
+              <input type="text" id="cinput-${it._id}" placeholder="${escapeHtml(t('commentPlaceholder'))}" onkeydown="if(event.key==='Enter')submitComment('${it._id}')">
+              <button onclick="submitComment('${it._id}')">${escapeHtml(t('commentSend'))}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function buildPhotoGallery(photos, name){
+  const imgs = photos.map(src=>`<img src="${src}" alt="${escapeHtml(name)}" loading="lazy">`).join('');
+  const scrollAttr = photos.length > 1 ? ' onscroll="onGalleryScroll(this)"' : '';
+  const gallery = `<div class="photo-gallery" onclick="openLightbox(this, event)"${scrollAttr}>${imgs}</div>`;
+  const dots = photos.length > 1
+    ? `<div class="photo-dots">${photos.map((_,i)=>`<span class="dot${i===0?' active':''}"></span>`).join('')}</div>`
+    : '';
+  return gallery + dots;
+}
+
+function onGalleryScroll(el){
+  const idx = Math.round(el.scrollLeft / el.clientWidth);
+  const wrap = el.parentElement;
+  const dots = wrap ? wrap.querySelector('.photo-dots') : null;
+  if(dots) dots.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active', i===idx));
+}
+
+function openLightbox(galleryEl, evt){
+  const imgEls = Array.from(galleryEl.querySelectorAll('img'));
+  const imgs = imgEls.map(im => im.src);
+  let startIndex = 0;
+  if(evt && evt.target && evt.target.tagName === 'IMG'){
+    startIndex = imgEls.indexOf(evt.target);
+  }
+  showLightbox(imgs, Math.max(0, startIndex));
+}
+
+function showLightbox(imgs, startIndex){
+  const track = document.getElementById('lightboxTrack');
+  const dotsWrap = document.getElementById('lightboxDots');
+  track.innerHTML = imgs.map(src=>`<img src="${src}">`).join('');
+  dotsWrap.innerHTML = imgs.length > 1
+    ? imgs.map((_,i)=>`<span class="dot${i===startIndex?' active':''}"></span>`).join('')
+    : '';
+  dotsWrap.style.display = imgs.length > 1 ? 'flex' : 'none';
+  const overlay = document.getElementById('lightboxOverlay');
+  overlay.classList.add('open');
+  requestAnimationFrame(()=>{
+    track.scrollLeft = startIndex * track.clientWidth;
+  });
+  track.onscroll = ()=>{
+    const idx = Math.round(track.scrollLeft / track.clientWidth);
+    dotsWrap.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active', i===idx));
+  };
+}
+
+function closeLightbox(){
+  document.getElementById('lightboxOverlay').classList.remove('open');
+}
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape') closeLightbox();
+});
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, s=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[s]));
+}
+
+applyStaticText();
+loadAndRender();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  });
+}
+</script>
+
+</body>
+</html>
