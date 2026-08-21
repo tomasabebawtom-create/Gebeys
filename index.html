@@ -1215,7 +1215,7 @@ function renderItemsGrid(items, container){
   }
   if(isMain) emptyState.style.display='none';
   container.innerHTML = items.map(it=>{
-    // photos are high quality and load immediately (no lazy-loading)
+    // photos are high quality; lazy-loading keeps the page fast as item count grows
     const photos = (it.photos && it.photos.length) ? it.photos : (it.photo ? [it.photo] : []);
     const photoHtml = photos.length
       ? buildPhotoGallery(photos, it.name)
@@ -1258,7 +1258,7 @@ function renderItemsGrid(items, container){
 }
 
 function buildPhotoGallery(photos, name){
-  const imgs = photos.map(src=>`<img src="${src}" alt="${escapeHtml(name)}" loading="eager" decoding="async">`).join('');
+  const imgs = photos.map(src=>`<img src="${src}" alt="${escapeHtml(name)}" loading="lazy" decoding="async">`).join('');
   const scrollAttr = photos.length > 1 ? ' onscroll="onGalleryScroll(this)"' : '';
   const gallery = `<div class="photo-gallery" onclick="openLightbox(this, event)"${scrollAttr}>${imgs}</div>`;
   const dots = photos.length > 1
