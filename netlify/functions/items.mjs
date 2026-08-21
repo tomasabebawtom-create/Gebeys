@@ -6,13 +6,32 @@ export default async (req) => {
 
   try {
     if (req.method === 'GET') {
+      const url = new URL(req.url);
+      const singleId = url.searchParams.get('id');
+
+      // fetching one item by id returns its full-quality photos (used when
+      // someone taps to enlarge a picture)
+      if (singleId) {
+        const item = await store.get(singleId, { type: 'json' });
+        if (!item) return new Response(JSON.stringify({ error: 'not found' }), { status: 404, headers });
+        return new Response(JSON.stringify({ _id: singleId, ...item }), { headers });
+      }
+
+      // the full list only needs to be fast to load, so send small thumbnails
+      // instead of full-size photos when an item has them; older items that
+      // were posted before thumbnails existed still send their full photos
       const { blobs } = await store.list();
       const results = await Promise.all(blobs.map(async (blob) => {
         try {
           const data = await store.get(blob.key, { type: 'json' });
-          return data ? { ...data, _id: blob.key } : null;
+          if (!data) return null;
+          const { photos, thumbs, ...rest } = data;
+          const light = { ...rest, _id: blob.key };
+          if (thumbs && thumbs.length) light.thumbs = thumbs;
+          else if (photos && photos.length) light.photos = photos;
+          return light;
         } catch {
-          return null;
+          return null; // skip a corrupted/unreadable item instead of failing the whole request
         }
       }));
       const items = results.filter(Boolean);
