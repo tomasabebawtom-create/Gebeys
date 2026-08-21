@@ -770,7 +770,7 @@ function wirePhotoInput(inputId, previewId, idx){
     prev.classList.add('loading');
     const task = Promise.all([
       compressImage(file, 800, 0.72),
-      compressImage(file, 200, 0.5)
+      compressImage(file, 420, 0.68)
     ]).then(([full, thumb])=>{
       photoDataUrls[idx] = full;
       photoThumbUrls[idx] = thumb;
