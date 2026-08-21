@@ -200,6 +200,16 @@
   }
   .empty .big{font-family:'Fraunces',serif;font-size:20px;color:var(--ink);margin-bottom:8px;}
 
+  .loading-state{
+    text-align:center;padding:60px 20px;color:var(--ink-dim);
+  }
+  .spinner{
+    width:34px;height:34px;margin:0 auto 14px;border-radius:50%;
+    border:3px solid #E7DDC8;border-top-color:var(--accent, #B5824A);
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
   .breadcrumb{
     display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;
   }
@@ -388,6 +398,10 @@
 
 <main>
   <div id="breadcrumb" class="breadcrumb" style="display:none;"></div>
+  <div id="loadingState" class="loading-state" style="display:none;">
+    <div class="spinner"></div>
+    <div id="loadingText">ዕቃዎች እየጫኑ ነው...</div>
+  </div>
   <div id="grid" class="grid"></div>
   <div id="allItemsSection" style="display:none;">
     <div class="section-title" id="allItemsTitle">ሁሉም ዕቃዎች</div>
@@ -511,6 +525,7 @@ const TRANSLATIONS = {
     emptySmall: 'የመጀመሪያውን ዕቃ ለመለጠፍ ከላይ በስተቀኝ ጥግ ላይ ይጫኑ',
     loadErrorBig: 'ዕቃዎቹን መጫን አልተቻለም',
     loadErrorSmall: 'የኢንተርኔት ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ',
+    loadingText: 'ዕቃዎች እየጫኑ ነው...',
     installTipBold: 'ማሳሰቢያ፦',
     installTipText: 'ይህን ገጽ በስልክዎ ላይ እንደ አፕ ለመጫን — Chrome ላይ ⋮ ምናሌ → «Add to Home screen» ይጫኑ፣ ወይም iPhone Safari ላይ Share → «Add to Home Screen» ይጫኑ።',
     pinTitle: 'የመግቢያ ኮድ',
@@ -565,6 +580,7 @@ const TRANSLATIONS = {
     emptySmall: 'Tap the top-right corner to post the first item',
     loadErrorBig: 'Could not load items',
     loadErrorSmall: 'Check your internet connection and try again',
+    loadingText: 'Loading items...',
     installTipBold: 'Tip:',
     installTipText: 'To install this page as an app on your phone — on Chrome tap ⋮ menu → "Add to Home screen", or on iPhone Safari tap Share → "Add to Home Screen".',
     pinTitle: 'Access Code',
@@ -625,6 +641,7 @@ function applyStaticText(){
   document.getElementById('emptySmall').textContent = t('emptySmall');
   document.getElementById('loadErrorBig').textContent = t('loadErrorBig');
   document.getElementById('loadErrorSmall').textContent = t('loadErrorSmall');
+  document.getElementById('loadingText').textContent = t('loadingText');
   document.getElementById('installTipBold').textContent = t('installTipBold');
   document.getElementById('installTipText').textContent = t('installTipText');
   document.getElementById('pinTitle').textContent = t('pinTitle');
@@ -743,6 +760,7 @@ async function prefillPhone(){
 }
 
 let photoDataUrls = [null, null];
+let photoThumbUrls = [null, null];
 let photoPending = [null, null]; // in-flight compression promises, so submit can wait for them
 function wirePhotoInput(inputId, previewId, idx){
   document.getElementById(inputId).addEventListener('change', (e)=>{
@@ -750,9 +768,13 @@ function wirePhotoInput(inputId, previewId, idx){
     if(!file) return;
     const prev = document.getElementById(previewId);
     prev.classList.add('loading');
-    const task = compressImage(file).then(dataUrl=>{
-      photoDataUrls[idx] = dataUrl;
-      prev.style.backgroundImage = `url(${dataUrl})`;
+    const task = Promise.all([
+      compressImage(file, 800, 0.72),
+      compressImage(file, 200, 0.5)
+    ]).then(([full, thumb])=>{
+      photoDataUrls[idx] = full;
+      photoThumbUrls[idx] = thumb;
+      prev.style.backgroundImage = `url(${thumb})`;
       prev.classList.add('filled');
       prev.classList.remove('loading');
       prev.innerHTML = '';
@@ -811,9 +833,11 @@ document.getElementById('formSubmit').addEventListener('click', async ()=>{
   }
 
   const photos = photoDataUrls.filter(Boolean);
+  const thumbs = photoThumbUrls.filter(Boolean);
   const item = {
     name, cat, subtype: subtype || null, price, desc, phone, delivery,
     photos,
+    thumbs,
     photo: photos[0] || null,
     ts: Date.now()
   };
@@ -854,6 +878,7 @@ function resetForm(){
   document.getElementById('fPhoto1').value='';
   document.getElementById('fPhoto2').value='';
   photoDataUrls = [null, null];
+  photoThumbUrls = [null, null];
   updateSubtypeField();
 }
 
@@ -953,23 +978,59 @@ function categoryPlaceholder(cat){
   return `<div class="no-photo">${icon.svg}<span>${escapeHtml(label)}</span></div>`;
 }
 
+const CACHE_KEY = 'gebeya_items_cache_v1';
+
+function loadCachedItems(){
+  try{
+    const raw = localStorage.getItem(CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch{ return null; }
+}
+function saveCachedItems(items){
+  try{ localStorage.setItem(CACHE_KEY, JSON.stringify(items)); }catch{}
+}
+
 async function loadAndRender(){
   const loadErrorState = document.getElementById('loadErrorState');
+  const loadingState = document.getElementById('loadingState');
+  const cached = loadCachedItems();
+
+  if(cached && cached.length){
+    // show what we already have immediately so the page never looks blank,
+    // then quietly refresh with the latest data in the background
+    currentItems = cached;
+    loadingState.style.display = 'none';
+    loadErrorState.style.display = 'none';
+    render();
+  } else {
+    loadingState.style.display = 'block';
+    grid.innerHTML = '';
+    emptyState.style.display = 'none';
+    loadErrorState.style.display = 'none';
+  }
+
   try{
     const res = await fetch('/api/items');
     if(!res.ok) throw new Error('bad response: ' + res.status);
     const items = await res.json();
     currentItems = items;
+    saveCachedItems(items);
+    loadingState.style.display = 'none';
     loadErrorState.style.display = 'none';
     render();
   }catch(e){
-    // a real load failure (network/server error) is different from a genuinely empty market —
-    // show a retry state instead of silently claiming there are no items
-    currentItems = [];
-    grid.innerHTML = '';
-    emptyState.style.display = 'none';
-    loadErrorState.style.display = 'block';
+    loadingState.style.display = 'none';
     console.error('gebeya: failed to load items', e);
+    if(!cached || !cached.length){
+      // a real load failure (network/server error) is different from a genuinely empty market —
+      // show a retry state instead of silently claiming there are no items
+      currentItems = [];
+      grid.innerHTML = '';
+      emptyState.style.display = 'none';
+      loadErrorState.style.display = 'block';
+    }
+    // if we already have cached items on screen, leave them as-is rather than
+    // replacing a working view with an error state
   }
 }
 document.getElementById('retryLoadBtn').addEventListener('click', loadAndRender);
@@ -1162,9 +1223,14 @@ function renderItemsGrid(items, container){
   }
   if(isMain) emptyState.style.display='none';
   container.innerHTML = items.map(it=>{
-    const photos = (it.photos && it.photos.length) ? it.photos : (it.photo ? [it.photo] : []);
+    // prefer small thumbnails for fast list rendering; the lightbox fetches
+    // full-quality photos on demand when the user taps to enlarge
+    const photos = (it.thumbs && it.thumbs.length) ? it.thumbs
+      : (it.photos && it.photos.length) ? it.photos
+      : (it.photo ? [it.photo] : []);
+    const hasFullRes = (it.thumbs && it.thumbs.length) ? true : false;
     const photoHtml = photos.length
-      ? buildPhotoGallery(photos, it.name)
+      ? buildPhotoGallery(photos, it.name, hasFullRes ? it._id : null)
       : categoryPlaceholder(it.cat);
     const delBtn = isAdmin ? `<button class="del-btn" onclick="deleteItem('${it._id}')">✕</button>` : '';
     const deliveryBadge = it.delivery ? `<div class="delivery-badge">${escapeHtml(t('deliveryBadge'))}</div>` : '';
@@ -1203,10 +1269,11 @@ function renderItemsGrid(items, container){
   }).join('');
 }
 
-function buildPhotoGallery(photos, name){
-  const imgs = photos.map(src=>`<img src="${src}" alt="${escapeHtml(name)}" loading="lazy">`).join('');
+function buildPhotoGallery(photos, name, itemId){
+  const imgs = photos.map(src=>`<img src="${src}" alt="${escapeHtml(name)}" loading="lazy" decoding="async">`).join('');
   const scrollAttr = photos.length > 1 ? ' onscroll="onGalleryScroll(this)"' : '';
-  const gallery = `<div class="photo-gallery" onclick="openLightbox(this, event)"${scrollAttr}>${imgs}</div>`;
+  const idAttr = itemId ? ` data-item-id="${escapeHtml(itemId)}"` : '';
+  const gallery = `<div class="photo-gallery" onclick="openLightbox(this, event)"${scrollAttr}${idAttr}>${imgs}</div>`;
   const dots = photos.length > 1
     ? `<div class="photo-dots">${photos.map((_,i)=>`<span class="dot${i===0?' active':''}"></span>`).join('')}</div>`
     : '';
@@ -1227,7 +1294,33 @@ function openLightbox(galleryEl, evt){
   if(evt && evt.target && evt.target.tagName === 'IMG'){
     startIndex = imgEls.indexOf(evt.target);
   }
-  showLightbox(imgs, Math.max(0, startIndex));
+  startIndex = Math.max(0, startIndex);
+  showLightbox(imgs, startIndex);
+
+  // the gallery shows small thumbnails for speed — once the lightbox is open,
+  // quietly fetch the full-quality photos and swap them in
+  const itemId = galleryEl.dataset.itemId;
+  if(itemId) upgradeLightboxToFullRes(itemId, startIndex);
+}
+
+async function upgradeLightboxToFullRes(itemId, startIndex){
+  try{
+    const res = await fetch('/api/items?id=' + encodeURIComponent(itemId));
+    if(!res.ok) return;
+    const full = await res.json();
+    const photos = full.photos;
+    if(!photos || !photos.length) return;
+    // only apply if the lightbox is still open on this item (user hasn't closed it)
+    const overlay = document.getElementById('lightboxOverlay');
+    if(!overlay.classList.contains('open')) return;
+    const track = document.getElementById('lightboxTrack');
+    track.innerHTML = photos.map(src=>`<img src="${src}">`).join('');
+    requestAnimationFrame(()=>{
+      track.scrollLeft = startIndex * track.clientWidth;
+    });
+  }catch(e){
+    // full-res upgrade failed silently — the thumbnail stays shown, which is still usable
+  }
 }
 
 function showLightbox(imgs, startIndex){
