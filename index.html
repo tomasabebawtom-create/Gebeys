@@ -760,7 +760,6 @@ async function prefillPhone(){
 }
 
 let photoDataUrls = [null, null];
-let photoThumbUrls = [null, null];
 let photoPending = [null, null]; // in-flight compression promises, so submit can wait for them
 function wirePhotoInput(inputId, previewId, idx){
   document.getElementById(inputId).addEventListener('change', (e)=>{
@@ -768,13 +767,9 @@ function wirePhotoInput(inputId, previewId, idx){
     if(!file) return;
     const prev = document.getElementById(previewId);
     prev.classList.add('loading');
-    const task = Promise.all([
-      compressImage(file, 800, 0.72),
-      compressImage(file, 420, 0.68)
-    ]).then(([full, thumb])=>{
+    const task = compressImage(file, 1280, 0.9).then((full)=>{
       photoDataUrls[idx] = full;
-      photoThumbUrls[idx] = thumb;
-      prev.style.backgroundImage = `url(${thumb})`;
+      prev.style.backgroundImage = `url(${full})`;
       prev.classList.add('filled');
       prev.classList.remove('loading');
       prev.innerHTML = '';
@@ -790,7 +785,7 @@ function wirePhotoInput(inputId, previewId, idx){
 wirePhotoInput('fPhoto1', 'photoPreview1', 0);
 wirePhotoInput('fPhoto2', 'photoPreview2', 1);
 
-function compressImage(file, maxW=800, quality=0.72){
+function compressImage(file, maxW=1280, quality=0.9){
   return new Promise((resolve, reject)=>{
     const reader = new FileReader();
     reader.onerror = () => reject(new Error('read failed'));
@@ -833,11 +828,9 @@ document.getElementById('formSubmit').addEventListener('click', async ()=>{
   }
 
   const photos = photoDataUrls.filter(Boolean);
-  const thumbs = photoThumbUrls.filter(Boolean);
   const item = {
     name, cat, subtype: subtype || null, price, desc, phone, delivery,
     photos,
-    thumbs,
     photo: photos[0] || null,
     ts: Date.now()
   };
@@ -878,7 +871,6 @@ function resetForm(){
   document.getElementById('fPhoto1').value='';
   document.getElementById('fPhoto2').value='';
   photoDataUrls = [null, null];
-  photoThumbUrls = [null, null];
   updateSubtypeField();
 }
 
@@ -1223,14 +1215,10 @@ function renderItemsGrid(items, container){
   }
   if(isMain) emptyState.style.display='none';
   container.innerHTML = items.map(it=>{
-    // prefer small thumbnails for fast list rendering; the lightbox fetches
-    // full-quality photos on demand when the user taps to enlarge
-    const photos = (it.thumbs && it.thumbs.length) ? it.thumbs
-      : (it.photos && it.photos.length) ? it.photos
-      : (it.photo ? [it.photo] : []);
-    const hasFullRes = (it.thumbs && it.thumbs.length) ? true : false;
+    // photos are high quality and load immediately (no lazy-loading)
+    const photos = (it.photos && it.photos.length) ? it.photos : (it.photo ? [it.photo] : []);
     const photoHtml = photos.length
-      ? buildPhotoGallery(photos, it.name, hasFullRes ? it._id : null)
+      ? buildPhotoGallery(photos, it.name)
       : categoryPlaceholder(it.cat);
     const delBtn = isAdmin ? `<button class="del-btn" onclick="deleteItem('${it._id}')">✕</button>` : '';
     const deliveryBadge = it.delivery ? `<div class="delivery-badge">${escapeHtml(t('deliveryBadge'))}</div>` : '';
@@ -1269,11 +1257,10 @@ function renderItemsGrid(items, container){
   }).join('');
 }
 
-function buildPhotoGallery(photos, name, itemId){
-  const imgs = photos.map(src=>`<img src="${src}" alt="${escapeHtml(name)}" loading="lazy" decoding="async">`).join('');
+function buildPhotoGallery(photos, name){
+  const imgs = photos.map(src=>`<img src="${src}" alt="${escapeHtml(name)}" loading="eager" decoding="async">`).join('');
   const scrollAttr = photos.length > 1 ? ' onscroll="onGalleryScroll(this)"' : '';
-  const idAttr = itemId ? ` data-item-id="${escapeHtml(itemId)}"` : '';
-  const gallery = `<div class="photo-gallery" onclick="openLightbox(this, event)"${scrollAttr}${idAttr}>${imgs}</div>`;
+  const gallery = `<div class="photo-gallery" onclick="openLightbox(this, event)"${scrollAttr}>${imgs}</div>`;
   const dots = photos.length > 1
     ? `<div class="photo-dots">${photos.map((_,i)=>`<span class="dot${i===0?' active':''}"></span>`).join('')}</div>`
     : '';
@@ -1294,33 +1281,7 @@ function openLightbox(galleryEl, evt){
   if(evt && evt.target && evt.target.tagName === 'IMG'){
     startIndex = imgEls.indexOf(evt.target);
   }
-  startIndex = Math.max(0, startIndex);
-  showLightbox(imgs, startIndex);
-
-  // the gallery shows small thumbnails for speed — once the lightbox is open,
-  // quietly fetch the full-quality photos and swap them in
-  const itemId = galleryEl.dataset.itemId;
-  if(itemId) upgradeLightboxToFullRes(itemId, startIndex);
-}
-
-async function upgradeLightboxToFullRes(itemId, startIndex){
-  try{
-    const res = await fetch('/api/items?id=' + encodeURIComponent(itemId));
-    if(!res.ok) return;
-    const full = await res.json();
-    const photos = full.photos;
-    if(!photos || !photos.length) return;
-    // only apply if the lightbox is still open on this item (user hasn't closed it)
-    const overlay = document.getElementById('lightboxOverlay');
-    if(!overlay.classList.contains('open')) return;
-    const track = document.getElementById('lightboxTrack');
-    track.innerHTML = photos.map(src=>`<img src="${src}">`).join('');
-    requestAnimationFrame(()=>{
-      track.scrollLeft = startIndex * track.clientWidth;
-    });
-  }catch(e){
-    // full-res upgrade failed silently — the thumbnail stays shown, which is still usable
-  }
+  showLightbox(imgs, Math.max(0, startIndex));
 }
 
 function showLightbox(imgs, startIndex){
